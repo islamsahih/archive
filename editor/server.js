@@ -1,4 +1,10 @@
 import express from 'express';
+import session from 'express-session';
+import passport from 'passport';
+import LocalStrategy from 'passport-local';
+import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
+import crypto from 'crypto'
 import fs from 'fs';
 import path, {dirname} from 'path';
 import {exec} from 'child_process';
@@ -8,19 +14,21 @@ import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+dotenv.config()
 
-const app = express();
-
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-const PORT = 3100;
-const BIN_ROOT = path.join(__dirname, 'bin')
+const PORT = process.env.PORT || 3100;
+const BIN_ROOT = process.env.BIN_ROOT || path.join(__dirname, 'bin')
 const CONTENT_TOOL = path.join(BIN_ROOT, 'content')
-const TMP_ROOT = path.join(__dirname, 'tmp')
-const FILES_ROOT = path.join(process.env.HOME, 'src/archive/app/content');
-const PROMPTS_DIR = path.join(__dirname, 'prompts');
-const TEMPLATES_DIR = path.join(__dirname, 'templates');
+const TMP_ROOT = process.env.TMP_ROOT || path.join(__dirname, 'tmp')
+const FILES_ROOT = process.env.FILES_ROOT || path.join(process.env.HOME, 'src/archive/app/content');
+const PROMPTS_DIR = process.env.PROMPTS_DIR || path.join(__dirname, 'prompts');
+const TEMPLATES_DIR = process.env.TEMPLATES_DIR || path.join(__dirname, 'templates');
+
+const AUTH_SESSION_SECRET = process.env.AUTH_SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+const AUTH_USER = process.env.AUTH_USER || 'admin'
+const AUTH_PASSWORD = process.env.AUTH_PASSWORD || crypto.randomBytes(32).toString('hex');
+
+!!!process.env.AUTH_PASSWORD && console.log(`User: ${AUTH_USER}\nPassword: ${AUTH_PASSWORD}`)
 
 const openai = new OpenAI({
     organization: process.env.OPENAI_ORGANIZATION,
@@ -28,11 +36,96 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
-// Middleware для обработки JSON
-app.use(express.json());
+const app = express();
 
-// Раздача статических файлов (для фронта)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
+
+app.use(session({
+  secret: 'your-secret-key', // Замените на свой секретный ключ
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+const saltRounds = 10;
+
+const hashedPassword = bcrypt.hashSync('pass', saltRounds);
+const users = [{ id: 1, username: 'admin', password: hashedPassword }];
+
+passport.use(new LocalStrategy(
+  (username, password, done) => {
+    const user = users.find(u => u.username === username);
+    if (!user || !bcrypt.compareSync(password, user.password)) {
+      return done(null, false, { message: 'Неверный логин или пароль' });
+    }
+    return done(null, user);
+  }
+));
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+  const user = users.find(u => u.id === id);
+  done(null, user);
+});
+
+app.use(express.static('public'));
+
+// Middleware для проверки аутентификации
+function isAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
+// Middleware для API
+function protectAPI(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: 'Unauthorized' });
+}
+
+// Маршруты
+
+// Защищенная главная страница
+app.get('/', isAuthenticated, (req, res) => {
+  res.sendFile(path.join(__dirname, 'protected', 'index.html'));
+});
+
+app.get('/index.html', isAuthenticated, (req, res) => {
+  res.sendFile(path.join(__dirname, 'protected', 'index.html'));
+});
+
+// Страница логина
+app.get('/login', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect('/'); // Если уже авторизован, редирект на главную
+  }
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Обработка логина
+app.post('/login',
+  passport.authenticate('local', {
+    successRedirect: '/', // Успешный логин -> главная страница
+    failureRedirect: '/login' // Неудача -> обратно на логин
+  })
+);
+
+// Выход
+app.get('/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) return next(err);
+    res.redirect('/login');
+  });
+});
 
 function sortFilesNumerically(files) {
     return files.sort((a, b) => {
@@ -54,7 +147,7 @@ function getFileTree(dir = ".") {
 }
 
 // Получение структуры файлового дерева
-app.get('/api/files', (req, res) => {
+app.get('/api/files', protectAPI, (req, res) => {
     try {
         const fileTree = getFileTree();
         res.json(fileTree);
@@ -64,7 +157,7 @@ app.get('/api/files', (req, res) => {
 });
 
 // Запуск скрипта упаковки файла
-app.post('/api/pack-file', (req, res) => {
+app.post('/api/pack-file', protectAPI, (req, res) => {
     const {filename, markdown, json} = req.body;
     if (!filename) {
         return res.status(400).json({error: 'Не указано имя файла'});
@@ -86,7 +179,7 @@ app.post('/api/pack-file', (req, res) => {
 });
 
 // Запуск скрипта разделения файла и отправка результата в редактор
-app.post('/api/unpack-file', (req, res) => {
+app.post('/api/unpack-file', protectAPI, (req, res) => {
     const {filename} = req.body;
     if (!filename) {
         return res.status(400).json({error: 'Не указано имя файла'});
@@ -167,7 +260,7 @@ async function processFragments(text) {
 }
 
 // API-метод обработки текста с параллельными запросами
-app.post('/api/process-all', async (req, res) => {
+app.post('/api/process-all', protectAPI, async (req, res) => {
     const {text} = req.body;
     if (!text) {
         return res.status(400).json({error: 'Текст не передан'});
@@ -181,14 +274,13 @@ app.post('/api/process-all', async (req, res) => {
     }
 });
 
-app.post('/api/process', async (req, res) => {
+app.post('/api/process', protectAPI, async (req, res) => {
     const {command, text} = req.body;
     if (!command || !text) {
         return res.status(400).json({error: 'Не указана команда или текст'});
     }
     res.json({result: await processCommand(command, text)});
 });
-
 
 app.listen(PORT, () => {
     console.log(`Сервер запущен на http://localhost:${PORT}`);
