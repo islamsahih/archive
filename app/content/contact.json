@@ -1,0 +1,7 @@
+{
+    "id": "8e6792a2-fefe-4619-9db3-da35bb72b92c",
+    "index": 1000002,
+    "dir_index": 102,
+    "title": "Контакты",
+    "body": "\u003cdiv class=\"flex flex-col items-start gap-y-2\"\u003e\n{{#social}}\n\u003ca href=\"{{link}}\" target=\"_blank\"\u003e\n    \u003cspan class=\"inline-flex items-center flex-shrink-0 align-sub mr-2\"\u003e\u003cimg class=\"m-0 w-5 h-5\" src=\"/icon/{{icon}}.svg\" alt=\"{{title}}\" /\u003e\u003c/span\u003e\n    {{title}}\n\u003c/a\u003e\n{{/social}}\n\u003c/div\u003e\n"
+}

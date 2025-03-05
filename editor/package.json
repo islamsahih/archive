@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "express": "^4.21.2",
+    "mustache": "^4.2.0",
+    "openai": "^4.84.0"
+  }
+}

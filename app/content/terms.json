@@ -1,0 +1,7 @@
+{
+    "id": "819f25d9-5c03-4b2d-8a11-b43dd311dff7",
+    "index": 1000003,
+    "dir_index": 103,
+    "title": "Условия использования",
+    "body": "\u003col\u003e\n\u003cli\u003eУказывайте источник при копировании\u003c/li\u003e\n\u003cli\u003eКопируйте весь текст, не вырывайте слова из контекста\u003c/li\u003e\n\u003cli\u003eЕсли заметите опечатку или ошибку, сообщите админам в {{#admin}}\u003ca href=\"{{link}}\" target=\"_blank\"\u003e\u003cspan class=\"inline-flex items-baseline ml-1 gap-x-1\"\u003e\u003cimg class=\"not-prose w-5 h-5 self-center\" src=\"/icon/{{icon}}.svg\" alt=\"{{title}}\" /\u003eTelegram\u003c/span\u003e\u003c/a\u003e{{/admin}}\u003c/li\u003e\n\u003c/ol\u003e\n"
+}

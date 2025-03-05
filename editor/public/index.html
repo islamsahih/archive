@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Editor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/gfm/gfm.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/mode/overlay.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/json/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="toolbar">
+    <div class="toolbar-section">
+        <button id="unpack-file" title="Скачать"><i class="fas fa-download"></i></button>
+        <button id="pack-file" title="Сохранить"><i class="fas fa-upload"></i></button>
+        <div class="replace-container">
+            <input type="text" id="find-text" placeholder="Find..." style="width: 150px">
+            <input type="text" id="replace-text" placeholder="Replace..." style="width: 150px">
+            <button id="replace-button" title="Заменить все"><i class="fas fa-repeat"></i></button>
+        </div>
+        <div class="flex-row-center">
+            <button id="wrap-translate-Quran" title="Перевод Кур'ана"><i class="fas fa-book"></i></button>
+            <button id="wrap-translate-hadith" title="Перевод хадиса"><i class="fas fa-scroll"></i></button>
+            <button id="wrap-translate-table" title="Перевод таблицы"><i class="fas fa-table"></i></button>
+            <div class="toolbar-spacer"></div>
+            <button id="wrap-bold" title="Выделить жирным"><i class="fas fa-bold"></i></button>
+            <button id="wrap-quotes" title="Выделить в кавычки"><i class="fas fa-quote-right"></i></button>
+            <div class="toolbar-spacer"></div>
+            <button id="clear-tags" title="Очистить теги"><i class="fas fa-code"></i></button>
+            <button id="replace-source-ar" title="Очистить теги">AR</button>
+            <button id="replace-source-ru" title="Очистить теги">RU</button>
+        </div>
+    </div>
+    <div class="toolbar-section">
+        <div class="flex-row-left">
+            <button id="copy-to-buffer" title="Копировать в буфер"><i class="fas fa-chevron-right"></i></button>
+            <button id="compare-diff" title="Сравнить с буфером"><i class="fas fa-exchange-alt"></i></button>
+            <button id="paste-from-buffer" title="Вставить из буфера"><i class="fa fa-chevron-left"></i></button>
+        </div>
+        <div class="flex-row-center">
+            <button id="process-all" title="Process All"><i class="fas fa-bolt"></i></button>
+        </div>
+<!--        <div class="flex-row-center">-->
+<!--            <button id="translate-Quran" title="Quran">Аят</button>-->
+<!--            <button id="translate-hadith" title="Quran">Хадис</button>-->
+<!--        </div>-->
+        <button id="clear-buffer" title="Очистить буфер"><i class="fas fa-xmark"></i></button>
+    </div>
+</div>
+<div class="container">
+    <div class="file-tree">
+        <ul id="file-list">
+            <!-- Динамическое файловое дерево -->
+        </ul>
+    </div>
+    <div class="editor-container">
+        <div id="editor-markdown"></div>
+        <div id="editor-json"></div>
+        <div class="editor-tabs">
+            <button id="tab-markdown" class="active">Markdown</button>
+            <button id="tab-json">JSON</button>
+        </div>
+    </div>
+    <div class="buffer-container">
+        <div id="buffer-main"></div>
+        <!--        <div id="buffer-notes"></div>-->
+    </div>
+</div>
+<script>
+    function toggleFolder(event) {
+        event.stopPropagation();
+        const li = event.currentTarget;
+        const ul = li.querySelector('ul');
+        if (ul) {
+            ul.style.display = ul.style.display === 'none' ? 'block' : 'none';
+            li.classList.toggle('expanded');
+        }
+    }
+
+    function createFileTree(parent, tree) {
+        tree.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item.name;
+            if (item.type === 'directory') {
+                li.addEventListener('click', toggleFolder);
+                const ul = document.createElement('ul');
+                ul.style.display = 'none';
+                createFileTree(ul, item.children);
+                li.appendChild(ul);
+            } else {
+                li.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    document.querySelectorAll(".file-tree li").forEach(li => li.classList.remove("selected"));
+                    event.target.classList.add("selected");
+                    document.getElementById('pack-file').setAttribute('data-file', item.path);
+                    document.getElementById('unpack-file').setAttribute('data-file', item.path);
+                    console.log(`Выбран файл: ${item.path}`);
+                });
+            }
+            parent.appendChild(li);
+        });
+    }
+
+    function loadFileTree() {
+        fetch('/api/files')
+            .then(response => response.json())
+            .then(files => {
+                const fileList = document.getElementById("file-list");
+                fileList.innerHTML = "";
+                createFileTree(fileList, files);
+            });
+    }
+
+    loadFileTree();
+
+    let activeTab = "markdown"
+
+    function switchTab(tab) {
+        if (tab === "markdown") {
+            document.getElementById("editor-markdown").style.display = "block";
+            document.getElementById("editor-json").style.display = "none";
+            document.getElementById("tab-markdown").classList.add("active");
+            document.getElementById("tab-json").classList.remove("active");
+            activeEditor = markdownEditor
+        }
+        if (tab === "json") {
+            document.getElementById("editor-markdown").style.display = "none";
+            document.getElementById("editor-json").style.display = "block";
+            document.getElementById("tab-json").classList.add("active");
+            document.getElementById("tab-markdown").classList.remove("active");
+            activeEditor = jsonEditor
+        }
+        activeTab = tab
+    }
+
+    // Переключение вкладок
+    document.getElementById("tab-markdown").addEventListener("click", () => switchTab("markdown"));
+    document.getElementById("tab-json").addEventListener("click", () => switchTab("json"));
+
+    // Инициализация CodeMirror для Markdown
+    const markdownEditor = CodeMirror(document.getElementById("editor-markdown"), {
+        mode: "gfm",
+        theme: "default",
+        lineNumbers: true
+    });
+
+    // Инициализация CodeMirror для JSON
+    const jsonEditor = CodeMirror(document.getElementById("editor-json"), {
+        mode: "application/json",
+        theme: "default",
+        lineNumbers: true
+    });
+
+    const bufferMain = CodeMirror(document.getElementById("buffer-main"), {
+        mode: "gfm",
+        theme: "default",
+        lineNumbers: true,
+        // lineWrapping: true
+    });
+
+    // const bufferNotes = CodeMirror(document.getElementById("buffer-notes"), {
+    //     mode: null,
+    //     theme: "default",
+    //     lineNumbers: true,
+    //     // lineWrapping: true
+    // });
+
+    document.getElementById("editor-json").classList.add("hidden");
+    let activeEditor = markdownEditor;
+
+    // Обновление содержимого редактора
+    function updateEditor(content, format) {
+        const recover = activeTab !== format ? activeTab : false
+        if (recover) {
+            switchTab(format)
+        }
+        if (format === "markdown") {
+            markdownEditor.setValue(content);
+        } else if (format === "json") {
+            jsonEditor.setValue(content);
+        }
+        if (recover) {
+            switchTab(recover)
+        }
+    }
+
+    document.getElementById("pack-file").addEventListener("click", function () {
+        const selectedFile = this.getAttribute('data-file');
+        if (!selectedFile) {
+            alert("Выберите файл из списка");
+            return;
+        }
+
+        fetch('/api/pack-file', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                filename: selectedFile,
+                markdown: markdownEditor.getValue(),
+                json: jsonEditor.getValue(),
+            })
+        })
+            .then(response => response.json())
+            .then(() => {
+            })
+            .catch(error => console.error('Ошибка:', error));
+    });
+
+    document.getElementById("unpack-file").addEventListener("click", function () {
+        const selectedFile = this.getAttribute('data-file');
+        if (!selectedFile) {
+            alert("Выберите файл из списка");
+            return;
+        }
+
+        fetch('/api/unpack-file', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({filename: selectedFile})
+        })
+            .then(response => response.json())
+            .then(data => {
+                updateEditor(data.markdown, "markdown");
+                updateEditor(data.json, "json");
+                switchTab("markdown")
+            })
+            .catch(error => console.error('Ошибка:', error));
+    });
+
+    document.getElementById("replace-button").addEventListener("click", function () {
+        const findText = document.getElementById("find-text").value;
+        const replaceText = document.getElementById("replace-text").value;
+        if (!findText) return;
+
+        activeEditor.setValue(activeEditor.getValue().replace(new RegExp(findText, 'g'), replaceText));
+    });
+
+    document.getElementById("copy-to-buffer").addEventListener("click", function () {
+        const selectedText = activeEditor.getSelection()
+        if (selectedText) {
+            bufferMain.setValue(selectedText)
+        } else {
+            bufferMain.setValue(activeEditor.getValue())
+        }
+    });
+
+    document.getElementById("paste-from-buffer").addEventListener("click", function () {
+        const selectedText = bufferMain.getSelection()
+        if (selectedText) {
+            activeEditor.replaceSelection(selectedText)
+        } else {
+            activeEditor.replaceSelection(bufferMain.getValue())
+        }
+    });
+
+    document.getElementById("clear-buffer").addEventListener("click", function () {
+        bufferMain.setValue();
+    });
+
+    function compareDiff() {
+        // const highlighted = diffs.map(([op, data]) => {
+        //     if (op === 1) return `<span style="background-color: #c8e6c9;">${data}</span>`; // Добавленный текст (зелёный)
+        //     if (op === -1) return `<span style="background-color: #ffcdd2; text-decoration: line-through;">${data}</span>`; // Удалённый текст (красный)
+        //     return data; // Оставшийся без изменений текст
+        // }).join('');
+        //
+        // let diffContainer = document.getElementById("diff-container");
+        // if (!diffContainer) {
+        //     diffContainer = document.createElement('div');
+        //     diffContainer.id = "diff-container";
+        //     diffContainer.style.border = "1px solid #ccc";
+        //     diffContainer.style.padding = "10px";
+        //     diffContainer.style.marginTop = "10px";
+        //     diffContainer.style.backgroundColor = "#f0f0f0";
+        //     document.body.appendChild(diffContainer);
+        // }
+        //
+        // diffContainer.innerHTML = highlighted;
+
+        const dmp = new diff_match_patch();
+        const editorText = activeEditor.getValue();
+        const bufferText = bufferMain.getValue();
+
+        const diffs = dmp.diff_main(editorText, bufferText);
+        dmp.diff_cleanupSemantic(diffs);
+
+        let editorIndex = 0;
+        let bufferIndex = 0;
+
+
+        activeEditor.operation(() => {
+            activeEditor.getAllMarks().forEach(mark => mark.clear());
+            bufferMain.getAllMarks().forEach(mark => mark.clear());
+
+            diffs.forEach(([op, data]) => {
+                let editorFrom = activeEditor.posFromIndex(editorIndex);
+                let editorTo = activeEditor.posFromIndex(editorIndex + data.length);
+                let bufferFrom = bufferMain.posFromIndex(bufferIndex);
+                let bufferTo = bufferMain.posFromIndex(bufferIndex + data.length);
+
+                if (op === 1) { // Добавленный текст (в буфере, отсутствует в редакторе)
+                    bufferMain.markText(bufferFrom, bufferTo, {className: "diff-added"});
+                    bufferIndex += data.length;
+                } else if (op === -1) { // Удаленный текст (в редакторе, отсутствует в буфере)
+                    activeEditor.markText(editorFrom, editorTo, {className: "diff-removed"});
+                    editorIndex += data.length;
+                } else {
+                    editorIndex += data.length;
+                    bufferIndex += data.length;
+                }
+            });
+        });
+    }
+
+    function wrapSelection(begin, end, trim) {
+        let selectedText = activeEditor.getSelection();
+        if (selectedText) {
+            if (trim) {
+                selectedText = selectedText.trim()
+            }
+            activeEditor.replaceSelection(`${begin}${selectedText}${end}`);
+        }
+    }
+
+    function replaceSelection(text) {
+        const selectedText = activeEditor.getSelection();
+        if (selectedText) {
+            activeEditor.replaceSelection(text);
+        }
+    }
+
+    function replaceClearTags() {
+        activeEditor.setValue(activeEditor.getValue().replace(/<\/?[^>]+>/g, ''));
+    }
+
+
+    const wrapTranslateQuran = () => wrapSelection('<%%translate_Quran%%', '%%>')
+    const wrapTranslateHadith = () => wrapSelection('<%%translate_hadith%%', '%%>')
+    const wrapTranslateTable = () => wrapSelection('<%%translate_table%%', '%%>')
+    const wrapBold = () => wrapSelection('**', '**', true)
+    const wrapQuotes = () => wrapSelection('«', '»', true)
+    const replaceSourceAr = () => replaceSelection("\n> > ###### {{source_ar}}\n>")
+    const replaceSourceRu = () => replaceSelection(`> > ###### {{source_ru}}`)
+
+    document.getElementById("wrap-translate-Quran").addEventListener("click", wrapTranslateQuran);
+    document.getElementById("wrap-translate-hadith").addEventListener("click", wrapTranslateHadith);
+    document.getElementById("wrap-translate-table").addEventListener("click", wrapTranslateTable);
+
+    document.getElementById("wrap-bold").addEventListener("click", wrapBold);
+    document.getElementById("wrap-quotes").addEventListener("click", wrapQuotes);
+    document.getElementById("clear-tags").addEventListener("click", replaceClearTags);
+
+    document.getElementById("replace-source-ru").addEventListener("click", replaceSourceAr);
+    document.getElementById("replace-source-ar").addEventListener("click", replaceSourceRu);
+
+    document.getElementById("compare-diff").addEventListener("click", compareDiff);
+
+    document.addEventListener("keydown", function (event) {
+        let handler = undefined;
+
+        if (event.ctrlKey && event.key === "1") {
+            handler = wrapTranslateQuran;
+        }
+        if (event.ctrlKey && event.key === "2") {
+            handler = wrapTranslateHadith;
+        }
+        if (event.ctrlKey && event.key === "3") {
+            handler = wrapTranslateTable;
+        }
+        if (event.ctrlKey && (event.key === "b" || event.key === "и")) {
+            handler = wrapBold;
+        }
+        if (event.ctrlKey && (event.key === "q" || event.key === "й")) {
+            handler = wrapQuotes;
+        }
+
+        if (event.ctrlKey && (event.key === "[" || event.key === "х")) {
+            handler = replaceSourceAr
+        }
+        if (event.ctrlKey && (event.key === "]" || event.key === "ъ")) {
+            handler = replaceSourceRu
+        }
+
+        if (event.ctrlKey && event.key === "0") {
+            handler = replaceClearTags
+        }
+
+        if (event.ctrlKey && (event.key === "h" || event.key === "р")) {
+            handler = () => {
+                const selectedText = activeEditor.getSelection();
+                if (selectedText) {
+                    document.getElementById("find-text").value = selectedText;
+                    document.getElementById("replace-text").focus();
+                }
+            }
+        }
+
+        if (handler) {
+            event.preventDefault();
+            handler();
+        }
+    })
+
+    function processBuffer(command) {
+        return async function () {
+            const text = bufferMain.getValue();
+            if (!text) return;
+
+            const response = await fetch("/api/process", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    command: command,
+                    text: text
+                })
+            });
+
+            const data = await response.json();
+            if (data.result) {
+                bufferMain.setValue(data.result);
+            } else {
+                console.error("Ошибка обработки ответа:", data.error);
+            }
+        }
+    }
+
+    document.getElementById("translate-Quran").addEventListener("click", processBuffer("translate_Quran"));
+    document.getElementById("translate-hadith").addEventListener("click", processBuffer("translate_hadith"));
+
+    document.getElementById("process-all").addEventListener("click", async function () {
+        const text = bufferMain.getValue();
+        if (!text) return;
+
+        const response = await fetch("/api/process-all", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                text: text
+            })
+        });
+
+        const data = await response.json();
+        if (data.result) {
+            bufferMain.setValue(data.result);
+        } else {
+            console.error("Ошибка обработки ответа:", data.error);
+        }
+    });
+
+</script>
+</body>
+</html>

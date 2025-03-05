@@ -1,0 +1,226 @@
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.toolbar {
+    display: flex;
+    background: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+}
+
+.toolbar-section {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    flex-wrap: wrap;
+    align-content: flex-end;
+}
+
+.toolbar-section:first-child {
+    width: 55%;
+    /*border-right: 1px solid #ccc;*/
+}
+
+.toolbar-section:nth-child(2) {
+    flex: 1;
+    justify-content: space-between;
+    /*border-right: 1px solid #ccc;*/
+}
+
+.toolbar-section:last-child {
+    flex: 1;
+    justify-content: space-between;
+}
+
+.toolbar button {
+    /*margin-right: 10px;*/
+    font-size: 20px;
+}
+
+.replace-container {
+    display: flex;
+    justify-content: center;
+    /*padding: 10px;*/
+    background: #f0f0f0;
+    /*border-bottom: 1px solid #ccc;*/
+}
+
+.process-container {
+    display: flex;
+    justify-content: center;
+}
+
+.replace-container input {
+    margin-right: 5px;
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+
+.process-container {
+    display: flex;
+    flex-direction: row;
+    gap: 5px
+}
+
+.container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.file-tree {
+    width: 15%;
+    background: #e8e8e8;
+    padding: 10px;
+    overflow-y: auto;
+    border-right: 1px solid #ccc;
+    height: 100%;
+}
+
+.file-tree ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.file-tree li {
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.file-tree li:hover {
+    background: #d0d0d0;
+}
+
+.file-tree li.selected {
+    background: #bbb;
+    font-weight: bold;
+}
+
+.file-tree ul ul {
+    padding-top: 10px;
+    padding-left: 10px;
+}
+
+.editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /*padding: 10px;*/
+    overflow: hidden;
+}
+
+#editor-markdown {
+    height: 100%;
+    overflow: auto;
+}
+
+#editor-json {
+    height: 100%;
+    overflow: auto;
+}
+
+.editor-tabs {
+    /*padding-top: 10px;*/
+    display: flex;
+    justify-content: flex-start;
+    /*border-top: 1px solid #ccc;*/
+}
+
+.editor-tabs button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: #ddd;
+    cursor: pointer;
+}
+
+.editor-tabs button.active {
+    background: #bbb;
+}
+
+.CodeMirror {
+    flex: 1;
+    height: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
+.buffer-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    /*border-left: 1px solid #ccc;*/
+}
+
+#buffer-main {
+    flex: 2;
+    height: 100%;
+    min-height: 100px;
+    overflow: auto;
+}
+
+.flex-row-center {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex: 1;
+    gap: 10px;
+}
+
+.flex-row-left {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    gap: 10px;
+}
+
+button {
+    height: fit-content;
+    min-width: 35px;
+}
+
+.toolbar-spacer {
+    width: 10px;
+}
+
+.diff-added {
+    background-color: #c8e6c9;
+}
+
+.diff-removed {
+    background-color: #ffcdd2;
+    text-decoration: line-through;
+}
+
+.mr-30 {
+    margin-right: 30px;
+}
+
+.ml-30 {
+    margin-left: 30px;
+}
+
+.pr-30 {
+    padding-right: 30px;
+}
+
+.pl-30 {
+    padding-left: 30px;
+}
+
+/*#buffer-notes {*/
+/*    flex: 1;*/
+/*    height: 33%;*/
+/*    min-height: 50px;*/
+/*    border-top: 1px solid #ccc;*/
+/*    background: #f8f8f8;*/
+/*    overflow: auto;*/
+/*}*/

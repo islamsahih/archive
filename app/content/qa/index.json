@@ -1,0 +1,16 @@
+{
+    "id": "d5f1e708-3efd-4e21-a891-e7580aa98105",
+    "index": 300000,
+    "dir_index": 3,
+    "title": "Ответы на вопросы",
+    "icon": "i-ion-chatboxes",
+    "settings": {
+        "children": {
+            "icon": "i-ion-chatboxes",
+            "short_title_template": "Вопрос {{dir_index}}",
+            "full_title_template": "Вопрос {{dir_index}}: {{{title}}}",
+            "list_title_template": "{{dir_index}}. {{{title}}}",
+            "no_self_breadcrumb": true
+        }
+    }
+}

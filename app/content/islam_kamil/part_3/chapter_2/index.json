@@ -1,0 +1,14 @@
+{
+    "id": "de8a1823-0445-4530-b735-3bc30ebd0f6d",
+    "index": 103000,
+    "dir_index": 2,
+    "title": "Цели Ислама",
+    "settings": {
+        "children": {
+            "icon": "i-ion-book-sharp",
+            "short_title_template": "Урок {{dir_index}}",
+            "full_title_template": "Урок {{dir_index}}: {{{title}}}",
+            "list_title_template": "{{dir_index}}. {{{title}}}"
+        }
+    }
+}

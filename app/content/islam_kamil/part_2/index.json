@@ -1,0 +1,15 @@
+{
+    "id": "b8e0c8b0-5080-4f51-a3e6-38f91c12f5bd",
+    "index": 101000,
+    "dir_index": 2,
+    "title": "Книга Аллаха",
+    "description": "Тафсир Куръана",
+    "settings": {
+        "children": {
+            "icon": "i-ion-book-sharp",
+            "short_title_template": "Урок {{dir_index}}",
+            "full_title_template": "Урок {{dir_index}}: {{{title}}}",
+            "list_title_template": "{{dir_index}}. {{{title}}}"
+        }
+    }
+}

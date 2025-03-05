@@ -1,0 +1,17 @@
+{
+    "id": "890fc9b8-df16-4dc1-a7c5-d081f8174175",
+    "index": 200000,
+    "dir_index": 2,
+    "title": "Хадисы",
+    "description": "Хадисы из книги «Полный Ислам»",
+    "icon": "i-ooui-references-ltr",
+    "settings": {
+        "full_title": "Хадисы из книги «Полный Ислам»",
+        "children": {
+            "icon": "i-ooui-references-ltr",
+            "short_title_template": "Часть {{dir_index}}",
+            "full_title_template": "Часть {{dir_index}}: {{{title}}}",
+            "list_title_template": "Часть {{dir_index}}: {{{title}}}"
+        }
+    }
+}

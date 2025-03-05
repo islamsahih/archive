@@ -1,0 +1,16 @@
+{
+    "id": "e11399b4-068d-4164-b7b8-0be7e3c06fc7",
+    "index": 201000,
+    "dir_index": 2,
+    "title": "Книга Аллаха",
+    "description": "Хадисы из второй части книги «Полный Ислам»",
+    "settings": {
+        "children": {
+            "icon": "i-ooui-references-ltr",
+            "short_title_template": "Хадис {{dir_index}}",
+            "full_title_template": "Хадис {{dir_index}}",
+            "list_title_template": "Хадис {{dir_index}}",
+            "no_self_breadcrumb": true
+        }
+    }
+}

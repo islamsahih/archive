@@ -1,0 +1,12 @@
+@font-face {
+  font-family: 'app-sans';
+  src: url('/assets/fonts/NotoSans.ttf') format('truetype');
+  font-weight: 100 900;
+  font-width: 100;
+}
+
+@font-face {
+  font-family: 'app-arabic';
+  src: url('/assets/fonts/NotoNaskhArabic.ttf') format('truetype');
+  font-weight: 600 700;
+}

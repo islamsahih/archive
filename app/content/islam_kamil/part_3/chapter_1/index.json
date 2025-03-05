@@ -1,0 +1,14 @@
+{
+    "id": "3f83f34a-49bf-4a7f-a947-3929f0df16b4",
+    "index": 102001,
+    "dir_index": 1,
+    "title": "Что такое Ислам?",
+    "settings": {
+        "children": {
+            "icon": "i-ion-book-sharp",
+            "short_title_template": "Урок {{dir_index}}",
+            "full_title_template": "Урок {{dir_index}}: {{{title}}}",
+            "list_title_template": "{{dir_index}}. {{{title}}}"
+        }
+    }
+}

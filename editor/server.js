@@ -1,0 +1,197 @@
+import express from 'express';
+import fs from 'fs';
+import path, {dirname} from 'path';
+import {exec} from 'child_process';
+import OpenAI from "openai";
+import Mustache from 'mustache';
+import {fileURLToPath} from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const app = express();
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+const PORT = 3100;
+const BIN_ROOT = path.join(__dirname, 'bin')
+const CONTENT_TOOL = path.join(BIN_ROOT, 'content')
+const TMP_ROOT = path.join(__dirname, 'tmp')
+const FILES_ROOT = path.join(process.env.HOME, 'src/archive/app/content');
+const PROMPTS_DIR = path.join(__dirname, 'prompts');
+const TEMPLATES_DIR = path.join(__dirname, 'templates');
+
+const openai = new OpenAI({
+    organization: process.env.OPENAI_ORGANIZATION,
+    project: process.env.OPENAI_PROJECT,
+    apiKey: process.env.OPENAI_API_KEY
+});
+
+// Middleware для обработки JSON
+app.use(express.json());
+
+// Раздача статических файлов (для фронта)
+app.use(express.static('public'));
+
+function sortFilesNumerically(files) {
+    return files.sort((a, b) => {
+        const numA = parseInt(a.name.match(/^\d+/)?.[0]) || 0;
+        const numB = parseInt(b.name.match(/^\d+/)?.[0]) || 0;
+        return numA - numB;
+    });
+}
+
+// Рекурсивная функция для получения структуры файлов
+function getFileTree(dir = ".") {
+    const items = fs.readdirSync(path.join(FILES_ROOT, dir), {withFileTypes: true});
+    return sortFilesNumerically(items.map(item => {
+        const fullPath = path.join(dir, item.name);
+        return item.isDirectory()
+            ? {name: item.name, type: 'directory', path: fullPath, children: getFileTree(fullPath)}
+            : {name: item.name, type: 'file', path: fullPath};
+    }));
+}
+
+// Получение структуры файлового дерева
+app.get('/api/files', (req, res) => {
+    try {
+        const fileTree = getFileTree();
+        res.json(fileTree);
+    } catch (err) {
+        res.status(500).json({error: 'Ошибка при чтении файлов'});
+    }
+});
+
+// Запуск скрипта упаковки файла
+app.post('/api/pack-file', (req, res) => {
+    const {filename, markdown, json} = req.body;
+    if (!filename) {
+        return res.status(400).json({error: 'Не указано имя файла'});
+    }
+
+    const filePath = path.join(FILES_ROOT, filename);
+    const jsonFile = path.join(TMP_ROOT, filename)
+    const markdownFile = jsonFile.replace(/\.json$/, '.md');
+
+    fs.writeFileSync(markdownFile, markdown)
+    fs.writeFileSync(jsonFile, json)
+
+    exec(`${CONTENT_TOOL} --pack --item-file="${filePath}" --fields-file="${jsonFile}" --text-file="${markdownFile}"`, (err, stdout, stderr) => {
+        if (err) {
+            return res.status(500).json({error: stderr});
+        }
+        res.json({message: 'Файл запакован успешно', output: stdout});
+    });
+});
+
+// Запуск скрипта разделения файла и отправка результата в редактор
+app.post('/api/unpack-file', (req, res) => {
+    const {filename} = req.body;
+    if (!filename) {
+        return res.status(400).json({error: 'Не указано имя файла'});
+    }
+
+    const filePath = path.join(FILES_ROOT, filename);
+    const jsonFile = path.join(TMP_ROOT, filename)
+    const markdownFile = jsonFile.replace(/\.json$/, '.md');
+
+    exec(`${CONTENT_TOOL} --unpack --item-file="${filePath}" --fields-file="${jsonFile}" --text-file="${markdownFile}"`, (err, stdout, stderr) => {
+        if (err) {
+            return res.status(500).json({error: stderr});
+        }
+
+        const markdownContent = fs.existsSync(markdownFile) ? fs.readFileSync(markdownFile, 'utf8') : '';
+        const jsonContent = fs.existsSync(jsonFile) ? fs.readFileSync(jsonFile, 'utf8') : '';
+
+        res.json({markdown: markdownContent, json: jsonContent});
+    });
+});
+
+async function processCommand(command, text) {
+    const promptFile = path.join(PROMPTS_DIR, `${command}.txt`);
+    const templateFile = path.join(TEMPLATES_DIR, `${command}.mustache`);
+
+    if (!fs.existsSync(promptFile)) {
+        return `Ошибка: команда '${command}' не найдена`;
+    }
+    if (!fs.existsSync(templateFile)) {
+        return `Ошибка: шаблон '${command}' не найден`;
+    }
+
+    const promptTemplate = fs.readFileSync(promptFile, 'utf8');
+    const fullPrompt = `${promptTemplate}\n\n${text}`;
+
+    try {
+        const completion = await openai.chat.completions.create({
+            messages: [{role: "user", content: fullPrompt}],
+            model: "gpt-4o",
+            store: true,
+        });
+
+        if (completion.choices && completion.choices.length > 0) {
+            const response = completion.choices[0].message.content.trim()
+            console.log(response)
+            let responseJson = JSON.parse(response);
+            if (responseJson.table?.length) {
+                responseJson.has_table = true
+            }
+            const templateContent = fs.readFileSync(templateFile, 'utf8');
+            return Mustache.render(templateContent, responseJson);;
+        } else {
+            return 'Ошибка обработки ответа OpenAI';
+        }
+    } catch (error) {
+        return 'Ошибка при запросе к OpenAI';
+    }
+}
+
+async function processFragments(text) {
+    const regex = /<%%(.*?)%%(.*?)%%>/gs;
+    let matches = [...text.matchAll(regex)];
+
+    if (matches.length === 0) {
+        return text; // Если нет команд, возвращаем оригинальный текст
+    }
+
+    let tasks = matches.map(async ([fullMatch, command, fragment]) => {
+        return {fullMatch, replacement: await processCommand(command, fragment)};
+    });
+
+    let results = await Promise.all(tasks);
+    results.forEach(({fullMatch, replacement}) => {
+        text = text.replace(fullMatch, replacement);
+    });
+
+    return text;
+}
+
+// API-метод обработки текста с параллельными запросами
+app.post('/api/process-all', async (req, res) => {
+    const {text} = req.body;
+    if (!text) {
+        return res.status(400).json({error: 'Текст не передан'});
+    }
+
+    try {
+        const processedText = await processFragments(text);
+        res.json({result: processedText});
+    } catch (error) {
+        res.status(500).json({error: 'Ошибка при обработке текста'});
+    }
+});
+
+app.post('/api/process', async (req, res) => {
+    const {command, text} = req.body;
+    if (!command || !text) {
+        return res.status(400).json({error: 'Не указана команда или текст'});
+    }
+    res.json({result: await processCommand(command, text)});
+});
+
+
+app.listen(PORT, () => {
+    console.log(`Сервер запущен на http://localhost:${PORT}`);
+});
+
+
