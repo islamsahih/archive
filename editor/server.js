@@ -43,7 +43,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 
 app.use(session({
-  secret: 'your-secret-key', // Замените на свой секретный ключ
+  secret: AUTH_SESSION_SECRET, // Замените на свой секретный ключ
   resave: false,
   saveUninitialized: false
 }));
@@ -52,8 +52,8 @@ app.use(passport.session());
 
 const saltRounds = 10;
 
-const hashedPassword = bcrypt.hashSync('pass', saltRounds);
-const users = [{ id: 1, username: 'admin', password: hashedPassword }];
+const hashedPassword = bcrypt.hashSync(AUTH_PASSWORD, saltRounds);
+const users = [{ id: 1, username: AUTH_USER, password: hashedPassword }];
 
 passport.use(new LocalStrategy(
   (username, password, done) => {
@@ -73,8 +73,6 @@ passport.deserializeUser((id, done) => {
   const user = users.find(u => u.id === id);
   done(null, user);
 });
-
-app.use(express.static('public'));
 
 // Middleware для проверки аутентификации
 function isAuthenticated(req, res, next) {
@@ -285,5 +283,3 @@ app.post('/api/process', protectAPI, async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Сервер запущен на http://localhost:${PORT}`);
 });
-
-

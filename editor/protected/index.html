@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/json/json.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/_editor/style.css">
 </head>
 <body>
 <div class="toolbar">
@@ -109,7 +109,7 @@
     }
 
     function loadFileTree() {
-        fetch('/api/files')
+        fetch('/_editor/api/files')
             .then(response => response.json())
             .then(files => {
                 const fileList = document.getElementById("file-list");
@@ -198,7 +198,7 @@
             return;
         }
 
-        fetch('/api/pack-file', {
+        fetch('/_editor/api/pack-file', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -220,7 +220,7 @@
             return;
         }
 
-        fetch('/api/unpack-file', {
+        fetch('/_editor/api/unpack-file', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({filename: selectedFile})
@@ -413,7 +413,7 @@
             const text = bufferMain.getValue();
             if (!text) return;
 
-            const response = await fetch("/api/process", {
+            const response = await fetch("/_editor/api/process", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -440,7 +440,7 @@
         const text = bufferMain.getValue();
         if (!text) return;
 
-        const response = await fetch("/api/process-all", {
+        const response = await fetch("/_editor/api/process-all", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
