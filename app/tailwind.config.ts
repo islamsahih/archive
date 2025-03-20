@@ -186,6 +186,9 @@ export default <Partial<Config>>{
                 paddingRight: '1rem',
                 paddingLeft: '1rem',
               },
+              '.dark blockquote blockquote': {
+                backgroundColor: 'rgb(var(--color-gray-800))',
+              },
               'blockquote blockquote p': {
                 textAlign: 'justify',
                 marginTop: '0',
@@ -213,11 +216,6 @@ export default <Partial<Config>>{
                 backgroundColor: 'rgb(var(--color-primary-200))',
                 fontWeight: theme('fontWeight.bold'),
               }
-            }
-          },
-          dark: {
-            a: {
-
             }
           },
           primary: {
