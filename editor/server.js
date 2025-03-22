@@ -28,6 +28,8 @@ const AUTH_SESSION_SECRET = process.env.AUTH_SESSION_SECRET || crypto.randomByte
 const AUTH_USER = process.env.AUTH_USER || 'admin'
 const AUTH_PASSWORD = process.env.AUTH_PASSWORD || crypto.randomBytes(32).toString('hex');
 
+const NO_PREFIX = process.env.NO_PREFIX || false;
+
 !!!process.env.AUTH_PASSWORD && console.log(`User: ${AUTH_USER}\nPassword: ${AUTH_PASSWORD}`)
 
 const openai = new OpenAI({
@@ -40,6 +42,13 @@ const app = express();
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+NO_PREFIX && app.use((req, res, next) => {
+    if (req.path.startsWith('/_editor/')) {
+        const newPath = req.path.replace('/_editor', '');
+        return res.redirect(307, newPath);
+    }
+    next();
+});
 app.use(express.static('public'));
 
 app.use(session({
@@ -170,6 +179,7 @@ app.post('/api/pack-file', protectAPI, (req, res) => {
 
     exec(`${CONTENT_TOOL} --pack --item-file="${filePath}" --fields-file="${jsonFile}" --text-file="${markdownFile}"`, (err, stdout, stderr) => {
         if (err) {
+            console.log(err.message ?? err)
             return res.status(500).json({error: stderr});
         }
         res.json({message: 'Файл запакован успешно', output: stdout});
@@ -189,6 +199,7 @@ app.post('/api/unpack-file', protectAPI, (req, res) => {
 
     exec(`${CONTENT_TOOL} --unpack --item-file="${filePath}" --fields-file="${jsonFile}" --text-file="${markdownFile}"`, (err, stdout, stderr) => {
         if (err) {
+            console.log(err.message ?? err)
             return res.status(500).json({error: stderr});
         }
 
