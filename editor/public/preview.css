@@ -1,0 +1,47 @@
+:root {
+--color-primary-50: 240 249 255;
+--color-primary-100: 224 242 254;
+--color-primary-200: 186 230 253;
+--color-primary-300: 125 211 252;
+--color-primary-400: 56 189 248;
+--color-primary-500: 14 165 233;
+--color-primary-600: 2 132 199;
+--color-primary-700: 3 105 161;
+--color-primary-800: 7 89 133;
+--color-primary-900: 12 74 110;
+--color-primary-950: 8 47 73;
+--color-primary-DEFAULT: var(--color-primary-500);
+
+--color-gray-50: 249 250 251;
+--color-gray-100: 243 244 246;
+--color-gray-200: 229 231 235;
+--color-gray-300: 209 213 219;
+--color-gray-400: 156 163 175;
+--color-gray-500: 107 114 128;
+--color-gray-600: 75 85 99;
+--color-gray-700: 55 65 81;
+--color-gray-800: 31 41 55;
+--color-gray-900: 17 24 39;
+--color-gray-950: 3 7 18;
+}
+
+.dark {
+  --color-primary-DEFAULT: var(--color-primary-400);
+}
+
+:root {
+  --content-width: 1280px;;
+--header-width: var(--content-width);
+--header-height: 4rem;
+--footer-height: 4rem;
+}
+
+.light {
+  --ui-background: 255 255 255;
+--ui-foreground: var(--color-gray-700);
+}
+
+.dark {
+  --ui-background: var(--color-gray-900);
+--ui-foreground: var(--color-gray-200);
+}

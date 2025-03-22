@@ -291,6 +291,59 @@ app.post('/api/process', protectAPI, async (req, res) => {
     res.json({result: await processCommand(command, text)});
 });
 
+// Эндпойнт для предпросмотра HTML из JSON файла
+app.get('/preview/*', protectAPI, (req, res) => {
+    // Получаем путь к файлу из URL
+    const filename = req.params[0]; // Это часть пути после /_editor/preview/
+
+
+    if (!filename) {
+        return res.status(400).json({ error: 'Имя файла не указано' });
+    }
+
+    const filePath = path.join(FILES_ROOT, filename);
+
+    try {
+        // Проверяем, существует ли файл
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ error: 'Файл не найден' });
+        }
+
+        // Читаем содержимое файла
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+
+        // Парсим JSON
+        const jsonData = JSON.parse(fileContent);
+
+        // Проверяем наличие поля body
+        if (!jsonData.body) {
+            return res.status(400).json({ error: 'Поле body не найдено в JSON' });
+        }
+
+        // Формируем HTML-страницу
+        const htmlPage = `
+      <!DOCTYPE html>
+      <html lang="ru">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Preview</title>
+      </head>
+      <body>
+        ${jsonData.body}
+      </body>
+      </html>
+    `;
+
+        // Отправляем HTML
+        res.setHeader('Content-Type', 'text/html');
+        res.send(htmlPage);
+    } catch (error) {
+        console.error('Ошибка при обработке файла:', error);
+        res.status(500).json({ error: 'Ошибка при обработке файла', details: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Сервер запущен на http://localhost:${PORT}`);
 });

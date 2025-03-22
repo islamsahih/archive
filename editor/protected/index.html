@@ -20,6 +20,7 @@
     <div class="toolbar-section">
         <button id="unpack-file" title="Скачать"><i class="fas fa-download"></i></button>
         <button id="pack-file" title="Сохранить"><i class="fas fa-upload"></i></button>
+        <button id="preview-file" title="Предпросмотр"><i class="fas fa-globe"></i></button>
         <div class="replace-container">
             <input type="text" id="find-text" placeholder="Find..." style="width: 150px">
             <input type="text" id="replace-text" placeholder="Replace..." style="width: 150px">
@@ -101,6 +102,7 @@
                     event.target.classList.add("selected");
                     document.getElementById('pack-file').setAttribute('data-file', item.path);
                     document.getElementById('unpack-file').setAttribute('data-file', item.path);
+                    document.getElementById('preview-file').setAttribute('data-file', item.path);
                     console.log(`Выбран файл: ${item.path}`);
                 });
             }
@@ -190,6 +192,16 @@
             switchTab(recover)
         }
     }
+
+    document.getElementById("preview-file").addEventListener("click", function () {
+        const selectedFile = this.getAttribute('data-file');
+        if (!selectedFile) {
+            alert("Выберите файл из списка");
+            return;
+        }
+
+        window.open(`/_editor/preview/${selectedFile}`, '_blank');
+    });
 
     document.getElementById("pack-file").addEventListener("click", function () {
         const selectedFile = this.getAttribute('data-file');
