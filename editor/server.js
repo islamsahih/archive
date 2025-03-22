@@ -294,23 +294,27 @@ app.post('/api/process', protectAPI, async (req, res) => {
 // Эндпойнт для предпросмотра HTML из JSON файла
 app.get('/preview/*', protectAPI, (req, res) => {
     // Получаем путь к файлу из URL
-    const filename = req.params[0]; // Это часть пути после /_editor/preview/
-
+    const filename = req.params[0];
 
     if (!filename) {
         return res.status(400).json({ error: 'Имя файла не указано' });
     }
 
     const filePath = path.join(FILES_ROOT, filename);
+    const templatePath = path.join(TEMPLATES_DIR, 'preview.mustache');
 
     try {
-        // Проверяем, существует ли файл
+        // Проверяем существование файлов
         if (!fs.existsSync(filePath)) {
             return res.status(404).json({ error: 'Файл не найден' });
         }
+        if (!fs.existsSync(templatePath)) {
+            return res.status(500).json({ error: 'Шаблон не найден' });
+        }
 
-        // Читаем содержимое файла
+        // Читаем содержимое файла и шаблона
         const fileContent = fs.readFileSync(filePath, 'utf8');
+        const template = fs.readFileSync(templatePath, 'utf8');
 
         // Парсим JSON
         const jsonData = JSON.parse(fileContent);
@@ -320,20 +324,11 @@ app.get('/preview/*', protectAPI, (req, res) => {
             return res.status(400).json({ error: 'Поле body не найдено в JSON' });
         }
 
-        // Формируем HTML-страницу
-        const htmlPage = `
-      <!DOCTYPE html>
-      <html lang="ru">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Preview</title>
-      </head>
-      <body>
-        ${jsonData.body}
-      </body>
-      </html>
-    `;
+        // Рендерим шаблон с данными
+        const htmlPage = Mustache.render(template, {
+            body: jsonData.body,
+            title: jsonData.title,
+        });
 
         // Отправляем HTML
         res.setHeader('Content-Type', 'text/html');
@@ -343,6 +338,7 @@ app.get('/preview/*', protectAPI, (req, res) => {
         res.status(500).json({ error: 'Ошибка при обработке файла', details: error.message });
     }
 });
+
 
 app.listen(PORT, () => {
     console.log(`Сервер запущен на http://localhost:${PORT}`);
