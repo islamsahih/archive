@@ -161,6 +161,7 @@ app.get('/api/files', protectAPI, (req, res) => {
         const fileTree = getFileTree();
         res.json(fileTree);
     } catch (err) {
+        console.error(err.message ?? err);
         res.status(500).json({error: 'Ошибка при чтении файлов'});
     }
 });
@@ -181,7 +182,7 @@ app.post('/api/pack-file', protectAPI, (req, res) => {
 
     exec(`${CONTENT_TOOL} --pack --item-file="${filePath}" --fields-file="${jsonFile}" --text-file="${markdownFile}"`, (err, stdout, stderr) => {
         if (err) {
-            console.log(err.message ?? err)
+            console.error(err.message ?? err);
             return res.status(500).json({error: stderr});
         }
         res.json({message: 'Файл запакован успешно', output: stdout});
@@ -201,7 +202,7 @@ app.post('/api/unpack-file', protectAPI, (req, res) => {
 
     exec(`${CONTENT_TOOL} --unpack --item-file="${filePath}" --fields-file="${jsonFile}" --text-file="${markdownFile}"`, (err, stdout, stderr) => {
         if (err) {
-            console.log(err.message ?? err)
+            console.error(err.message ?? err);
             return res.status(500).json({error: stderr});
         }
 
@@ -246,7 +247,8 @@ async function processCommand(command, text) {
         } else {
             return 'Ошибка обработки ответа OpenAI';
         }
-    } catch (error) {
+    } catch (err) {
+        console.error(err.message ?? err);
         return 'Ошибка при запросе к OpenAI';
     }
 }
@@ -281,7 +283,8 @@ app.post('/api/process-all', protectAPI, async (req, res) => {
     try {
         const processedText = await processFragments(text);
         res.json({result: processedText});
-    } catch (error) {
+    } catch (err) {
+        console.error(err.message ?? err);
         res.status(500).json({error: 'Ошибка при обработке текста'});
     }
 });
@@ -306,8 +309,6 @@ app.get('/preview/*', protectAPI, (req, res) => {
 
     const filePath = tmp ? path.join(TMP_ROOT, filename.replace(/\.json$/, '.preview.json')) : path.join(FILES_ROOT, filename);
     const templatePath = path.join(TEMPLATES_DIR, 'preview.mustache');
-
-    console.log(filePath)
 
     try {
         // Проверяем существование файлов
@@ -339,8 +340,8 @@ app.get('/preview/*', protectAPI, (req, res) => {
         // Отправляем HTML
         res.setHeader('Content-Type', 'text/html');
         res.send(htmlPage);
-    } catch (error) {
-        console.error('Ошибка при обработке файла:', error);
+    } catch (err) {
+        console.error(err.message ?? err);
         res.status(500).json({error: 'Ошибка при обработке файла', details: error.message});
     }
 });
