@@ -68,10 +68,10 @@ func NewOperation(opt Options) (Operation, error) {
 }
 
 func (a *operation) Exec() error {
-	if err := os.MkdirAll(a.opt.FieldsDir, 0775); err != nil {
+	if err := os.MkdirAll(a.opt.FieldsDir, 0644); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(a.opt.TextDir, 0775); err != nil {
+	if err := os.MkdirAll(a.opt.TextDir, 0644); err != nil {
 		return err
 	}
 
@@ -284,7 +284,7 @@ func unpackFile(itemFile, fieldsFile, textFile string) error {
 }
 
 func loadItem(path string) (*archive.Item, error) {
-	f, err := os.OpenFile(path, os.O_RDWR, 0775)
+	f, err := os.OpenFile(path, os.O_RDWR, 0644)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +298,7 @@ func loadItem(path string) (*archive.Item, error) {
 }
 
 func saveItem(item *archive.Item, path string) error {
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0775)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
@@ -310,7 +310,7 @@ func saveItem(item *archive.Item, path string) error {
 }
 
 func saveFields(item *archive.Item, path string) error {
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0775)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
