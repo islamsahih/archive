@@ -27,6 +27,8 @@
             <button id="replace-button" title="Заменить все"><i class="fas fa-repeat"></i></button>
         </div>
         <div class="flex-row-center">
+            <button id="preview-editor" title="Предпросмотр"><i class="fas fa-globe"></i></button>
+            <div class="toolbar-spacer"></div>
             <button id="wrap-translate-Quran" title="Перевод Кур'ана"><i class="fas fa-book"></i></button>
             <button id="wrap-translate-hadith" title="Перевод хадиса"><i class="fas fa-scroll"></i></button>
             <button id="wrap-translate-table" title="Перевод таблицы"><i class="fas fa-table"></i></button>
@@ -103,6 +105,7 @@
                     document.getElementById('pack-file').setAttribute('data-file', item.path);
                     document.getElementById('unpack-file').setAttribute('data-file', item.path);
                     document.getElementById('preview-file').setAttribute('data-file', item.path);
+                    document.getElementById('preview-editor').setAttribute('data-file', item.path);
                     console.log(`Выбран файл: ${item.path}`);
                 });
             }
@@ -203,6 +206,30 @@
         window.open(`/_editor/preview/${selectedFile}`, '_blank');
     });
 
+    document.getElementById("preview-editor").addEventListener("click", async function () {
+        const selectedFile = this.getAttribute('data-file');
+        if (!selectedFile) {
+            alert("Выберите файл из списка");
+            return;
+        }
+        fetch('/_editor/api/pack-file', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                filename: selectedFile,
+                markdown: markdownEditor.getValue(),
+                json: jsonEditor.getValue(),
+                tmp: true
+            }),
+        })
+        .then(() => {
+            setTimeout(() => {
+                window.open(`/_editor/preview/${selectedFile}?tmp=1`, '_blank')
+            }, 1000);
+        })
+        .catch(error => console.error('Ошибка:', error));
+    });
+
     document.getElementById("pack-file").addEventListener("click", function () {
         const selectedFile = this.getAttribute('data-file');
         if (!selectedFile) {
@@ -220,8 +247,6 @@
             })
         })
             .then(response => response.json())
-            .then(() => {
-            })
             .catch(error => console.error('Ошибка:', error));
     });
 

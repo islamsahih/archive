@@ -40,21 +40,23 @@ const openai = new OpenAI({
 
 const app = express();
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb', extended: true}));
 NO_PREFIX && app.use((req, res, next) => {
     if (req.path.startsWith('/_editor/')) {
         const newPath = req.path.replace('/_editor', '');
-        return res.redirect(307, newPath);
+        const fullUrl = newPath + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '');
+        res.redirect(307, fullUrl); // Сохраняет ?tmp=1
+    } else {
+        next();
     }
-    next();
 });
 app.use(express.static('public'));
 
 app.use(session({
-  secret: AUTH_SESSION_SECRET, // Замените на свой секретный ключ
-  resave: false,
-  saveUninitialized: false
+    secret: AUTH_SESSION_SECRET, // Замените на свой секретный ключ
+    resave: false,
+    saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -62,76 +64,76 @@ app.use(passport.session());
 const saltRounds = 10;
 
 const hashedPassword = bcrypt.hashSync(AUTH_PASSWORD, saltRounds);
-const users = [{ id: 1, username: AUTH_USER, password: hashedPassword }];
+const users = [{id: 1, username: AUTH_USER, password: hashedPassword}];
 
 passport.use(new LocalStrategy(
-  (username, password, done) => {
-    const user = users.find(u => u.username === username);
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-      return done(null, false, { message: 'Неверный логин или пароль' });
+    (username, password, done) => {
+        const user = users.find(u => u.username === username);
+        if (!user || !bcrypt.compareSync(password, user.password)) {
+            return done(null, false, {message: 'Неверный логин или пароль'});
+        }
+        return done(null, user);
     }
-    return done(null, user);
-  }
 ));
 
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+    done(null, user.id);
 });
 
 passport.deserializeUser((id, done) => {
-  const user = users.find(u => u.id === id);
-  done(null, user);
+    const user = users.find(u => u.id === id);
+    done(null, user);
 });
 
 // Middleware для проверки аутентификации
 function isAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.redirect('/login');
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.redirect('/login');
 }
 
 // Middleware для API
 function protectAPI(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({ error: 'Unauthorized' });
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.status(401).json({error: 'Unauthorized'});
 }
 
 // Маршруты
 
 // Защищенная главная страница
 app.get('/', isAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, 'protected', 'index.html'));
+    res.sendFile(path.join(__dirname, 'protected', 'index.html'));
 });
 
 app.get('/index.html', isAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, 'protected', 'index.html'));
+    res.sendFile(path.join(__dirname, 'protected', 'index.html'));
 });
 
 // Страница логина
 app.get('/login', (req, res) => {
-  if (req.isAuthenticated()) {
-    return res.redirect('/'); // Если уже авторизован, редирект на главную
-  }
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    if (req.isAuthenticated()) {
+        return res.redirect('/'); // Если уже авторизован, редирект на главную
+    }
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // Обработка логина
 app.post('/login',
-  passport.authenticate('local', {
-    successRedirect: '/', // Успешный логин -> главная страница
-    failureRedirect: '/login' // Неудача -> обратно на логин
-  })
+    passport.authenticate('local', {
+        successRedirect: '/', // Успешный логин -> главная страница
+        failureRedirect: '/login' // Неудача -> обратно на логин
+    })
 );
 
 // Выход
 app.get('/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) return next(err);
-    res.redirect('/login');
-  });
+    req.logout((err) => {
+        if (err) return next(err);
+        res.redirect('/login');
+    });
 });
 
 function sortFilesNumerically(files) {
@@ -165,12 +167,12 @@ app.get('/api/files', protectAPI, (req, res) => {
 
 // Запуск скрипта упаковки файла
 app.post('/api/pack-file', protectAPI, (req, res) => {
-    const {filename, markdown, json} = req.body;
+    const {filename, markdown, json, tmp} = req.body;
     if (!filename) {
         return res.status(400).json({error: 'Не указано имя файла'});
     }
 
-    const filePath = path.join(FILES_ROOT, filename);
+    const filePath = tmp ? path.join(TMP_ROOT, filename.replace(/\.json$/, '.preview.json')) : path.join(FILES_ROOT, filename);
     const jsonFile = path.join(TMP_ROOT, filename)
     const markdownFile = jsonFile.replace(/\.json$/, '.md');
 
@@ -239,7 +241,8 @@ async function processCommand(command, text) {
                 responseJson.has_table = true
             }
             const templateContent = fs.readFileSync(templateFile, 'utf8');
-            return Mustache.render(templateContent, responseJson);;
+            return Mustache.render(templateContent, responseJson);
+            ;
         } else {
             return 'Ошибка обработки ответа OpenAI';
         }
@@ -295,21 +298,24 @@ app.post('/api/process', protectAPI, async (req, res) => {
 app.get('/preview/*', protectAPI, (req, res) => {
     // Получаем путь к файлу из URL
     const filename = req.params[0];
+    const tmp = req.query.tmp;
 
     if (!filename) {
-        return res.status(400).json({ error: 'Имя файла не указано' });
+        return res.status(400).json({error: 'Имя файла не указано'});
     }
 
-    const filePath = path.join(FILES_ROOT, filename);
+    const filePath = tmp ? path.join(TMP_ROOT, filename.replace(/\.json$/, '.preview.json')) : path.join(FILES_ROOT, filename);
     const templatePath = path.join(TEMPLATES_DIR, 'preview.mustache');
+
+    console.log(filePath)
 
     try {
         // Проверяем существование файлов
         if (!fs.existsSync(filePath)) {
-            return res.status(404).json({ error: 'Файл не найден' });
+            return res.status(404).json({error: 'Файл не найден'});
         }
         if (!fs.existsSync(templatePath)) {
-            return res.status(500).json({ error: 'Шаблон не найден' });
+            return res.status(500).json({error: 'Шаблон не найден'});
         }
 
         // Читаем содержимое файла и шаблона
@@ -321,7 +327,7 @@ app.get('/preview/*', protectAPI, (req, res) => {
 
         // Проверяем наличие поля body
         if (!jsonData.body) {
-            return res.status(400).json({ error: 'Поле body не найдено в JSON' });
+            return res.status(400).json({error: 'Поле body не найдено в JSON'});
         }
 
         // Рендерим шаблон с данными
@@ -335,10 +341,9 @@ app.get('/preview/*', protectAPI, (req, res) => {
         res.send(htmlPage);
     } catch (error) {
         console.error('Ошибка при обработке файла:', error);
-        res.status(500).json({ error: 'Ошибка при обработке файла', details: error.message });
+        res.status(500).json({error: 'Ошибка при обработке файла', details: error.message});
     }
 });
-
 
 app.listen(PORT, () => {
     console.log(`Сервер запущен на http://localhost:${PORT}`);
