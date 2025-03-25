@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "crypto": "^1.0.1",

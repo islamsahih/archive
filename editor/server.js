@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3100;
 const BIN_ROOT = process.env.BIN_ROOT || path.join(__dirname, 'bin')
 const CONTENT_TOOL = path.join(BIN_ROOT, 'content')
 const TMP_ROOT = process.env.TMP_ROOT || path.join(__dirname, 'tmp')
-const FILES_ROOT = process.env.FILES_ROOT || path.join(process.env.HOME, 'src/archive/app/content');
+const FILES_ROOT = process.env.FILES_ROOT || path.join(__dirname, 'content');
 const PROMPTS_DIR = process.env.PROMPTS_DIR || path.join(__dirname, 'prompts');
 const TEMPLATES_DIR = process.env.TEMPLATES_DIR || path.join(__dirname, 'templates');
 
@@ -29,6 +29,14 @@ const AUTH_USER = process.env.AUTH_USER || 'admin'
 const AUTH_PASSWORD = process.env.AUTH_PASSWORD || crypto.randomBytes(32).toString('hex');
 
 const NO_PREFIX = process.env.NO_PREFIX || false;
+
+console.log(`PORT: ${PORT}`)
+console.log(`BIN_ROOT: ${BIN_ROOT}`)
+console.log(`CONTENT_TOOL: ${CONTENT_TOOL}`)
+console.log(`TMP_ROOT: ${TMP_ROOT}`)
+console.log(`FILES_ROOT: ${FILES_ROOT}`)
+console.log(`PROMPTS_DIR: ${PROMPTS_DIR}`)
+console.log(`TEMPLATES_DIR: ${TEMPLATES_DIR}`)
 
 !!!process.env.AUTH_PASSWORD && console.log(`User: ${AUTH_USER}\nPassword: ${AUTH_PASSWORD}`)
 
@@ -161,6 +169,7 @@ app.get('/api/files', protectAPI, (req, res) => {
         const fileTree = getFileTree();
         res.json(fileTree);
     } catch (err) {
+        console.error(err.message ?? err);
         res.status(500).json({error: 'Ошибка при чтении файлов'});
     }
 });
@@ -181,7 +190,7 @@ app.post('/api/pack-file', protectAPI, (req, res) => {
 
     exec(`${CONTENT_TOOL} --pack --item-file="${filePath}" --fields-file="${jsonFile}" --text-file="${markdownFile}"`, (err, stdout, stderr) => {
         if (err) {
-            console.log(err.message ?? err)
+            console.error(err.message ?? err);
             return res.status(500).json({error: stderr});
         }
         res.json({message: 'Файл запакован успешно', output: stdout});
@@ -201,7 +210,7 @@ app.post('/api/unpack-file', protectAPI, (req, res) => {
 
     exec(`${CONTENT_TOOL} --unpack --item-file="${filePath}" --fields-file="${jsonFile}" --text-file="${markdownFile}"`, (err, stdout, stderr) => {
         if (err) {
-            console.log(err.message ?? err)
+            console.error(err.message ?? err);
             return res.status(500).json({error: stderr});
         }
 
@@ -246,7 +255,8 @@ async function processCommand(command, text) {
         } else {
             return 'Ошибка обработки ответа OpenAI';
         }
-    } catch (error) {
+    } catch (err) {
+        console.error(err.message ?? err);
         return 'Ошибка при запросе к OpenAI';
     }
 }
@@ -281,7 +291,8 @@ app.post('/api/process-all', protectAPI, async (req, res) => {
     try {
         const processedText = await processFragments(text);
         res.json({result: processedText});
-    } catch (error) {
+    } catch (err) {
+        console.error(err.message ?? err);
         res.status(500).json({error: 'Ошибка при обработке текста'});
     }
 });
@@ -306,8 +317,6 @@ app.get('/preview/*', protectAPI, (req, res) => {
 
     const filePath = tmp ? path.join(TMP_ROOT, filename.replace(/\.json$/, '.preview.json')) : path.join(FILES_ROOT, filename);
     const templatePath = path.join(TEMPLATES_DIR, 'preview.mustache');
-
-    console.log(filePath)
 
     try {
         // Проверяем существование файлов
@@ -339,8 +348,8 @@ app.get('/preview/*', protectAPI, (req, res) => {
         // Отправляем HTML
         res.setHeader('Content-Type', 'text/html');
         res.send(htmlPage);
-    } catch (error) {
-        console.error('Ошибка при обработке файла:', error);
+    } catch (err) {
+        console.error(err.message ?? err);
         res.status(500).json({error: 'Ошибка при обработке файла', details: error.message});
     }
 });
