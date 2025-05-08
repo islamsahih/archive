@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	telegraphRE = regexp.MustCompile(`telegra\.ph\/[-a-zA-Z0-9.]+(\/\S*)?`)
+	//telegraphRE = regexp.MustCompile(`telegra\.ph\/[-a-zA-Z0-9.]+(\/\S*)?`)
+	telegraphRE = regexp.MustCompile(`telegra\.ph.*`)
 )
 
 func IsTelegraphURL(href string) bool {
