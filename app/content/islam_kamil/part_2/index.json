@@ -1,9 +1,9 @@
 {
-    "id": "b8e0c8b0-5080-4f51-a3e6-38f91c12f5bd",
-    "index": 101000,
+    "id": "af97ca47-d4ee-45e5-841c-c4a90f6cd012",
+    "index": 100002,
     "dir_index": 2,
-    "title": "Книга Аллаха",
-    "description": "Тафсир Куръана",
+    "title": "Основные вопросы",
+    "description": "Основные вопросы и термины, которые необходимо изучить человеку, чтобы понять Ислам",
     "settings": {
         "children": {
             "icon": "i-ion-book-sharp",

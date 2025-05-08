@@ -1,0 +1,15 @@
+{
+    "id": "50630c07-f8cc-4d79-b22a-6e5e3eb8bdcd",
+    "index": 102000,
+    "dir_index": 4,
+    "title": "Ас-Сунна",
+    "description": "Подробный разбор хадисов",
+    "settings": {
+        "children": {
+            "icon": "i-ion-book-sharp",
+            "short_title_template": "Глава {{dir_index}}",
+            "full_title_template": "Глава {{dir_index}}: {{{title}}}",
+            "list_title_template": "Глава {{dir_index}}. {{{title}}}"
+        }
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "id": "f42cf191-9980-40d1-8722-13b188ed2578",
+    "index": 203000,
+    "dir_index": 3,
+    "title": "Ас-Сунна",
+    "description": "Хадисы из четвертой части книги «Полный Ислам»",
+    "settings": {
+        "children": {
+            "icon": "i-ooui-references-ltr",
+            "short_title_template": "Хадис {{dir_index}}",
+            "full_title_template": "Хадис {{dir_index}}",
+            "list_title_template": "Хадис {{dir_index}}",
+            "no_self_breadcrumb": true
+        }
+    }
+}

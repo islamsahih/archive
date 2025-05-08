@@ -1,15 +1,15 @@
 {
-    "id": "50630c07-f8cc-4d79-b22a-6e5e3eb8bdcd",
-    "index": 102000,
+    "id": "b8e0c8b0-5080-4f51-a3e6-38f91c12f5bd",
+    "index": 101000,
     "dir_index": 3,
-    "title": "Ас-Сунна",
-    "description": "Подробный разбор хадисов",
+    "title": "Книга Аллаха",
+    "description": "Тафсир Куръана",
     "settings": {
         "children": {
             "icon": "i-ion-book-sharp",
-            "short_title_template": "Глава {{dir_index}}",
-            "full_title_template": "Глава {{dir_index}}: {{{title}}}",
-            "list_title_template": "Глава {{dir_index}}. {{{title}}}"
+            "short_title_template": "Урок {{dir_index}}",
+            "full_title_template": "Урок {{dir_index}}: {{{title}}}",
+            "list_title_template": "{{dir_index}}. {{{title}}}"
         }
     }
 }
