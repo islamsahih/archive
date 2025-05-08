@@ -1,0 +1,15 @@
+{
+    "id": "399ae389-0af7-4ffe-98a2-492b439c66d9",
+    "index": 90000,
+    "dir_index": 1,
+    "title": "Терминология",
+    "description": "Словарь терминов из Откровения",
+    "settings": {
+        "children": {
+            "icon": "i-streamline-dictionary-language-book-solid",
+            "short_title_template": "Глава {{dir_index}}",
+            "full_title_template": "Глава {{dir_index}}: {{{title}}}",
+            "list_title_template": "Глава {{dir_index}}. {{{title}}}"
+        }
+    }
+}
