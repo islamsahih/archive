@@ -7,9 +7,9 @@
     "settings": {
         "children": {
             "icon": "i-streamline-dictionary-language-book-solid",
-            "short_title_template": "Глава {{dir_index}}",
-            "full_title_template": "Глава {{dir_index}}: {{{title}}}",
-            "list_title_template": "Глава {{dir_index}}. {{{title}}}"
+            "short_title_template": "Урок {{dir_index}}",
+            "full_title_template": "Урок {{dir_index}}: {{{title}}}",
+            "list_title_template": "Урок {{dir_index}}. {{{title}}}"
         }
     }
 }
