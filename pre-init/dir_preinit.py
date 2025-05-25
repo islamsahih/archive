@@ -6,7 +6,7 @@ def create_dictionary_files(output_dir):
     os.makedirs(output_dir, exist_ok=True)
 
     # Папка для текстов
-    text_dir = os.path.join(output_dir, "text", "dictionary")
+    text_dir = os.path.join(output_dir, "text", "islam_kamil", "part_1")
     os.makedirs(text_dir, exist_ok=True)
 
     for i in range(1, 234):
@@ -17,8 +17,8 @@ def create_dictionary_files(output_dir):
             "dir_index": file_index,
             "date": "2025-01-14",
             "title": "",
-            "text": f"/text/dictionary/{file_index}.md",
-            "audio": f"/audio/dictionary/{file_index}.mp3",
+            "text": f"/text/islam_kamil/part_1/{file_index}.md",
+            "audio": f"/audio/islam_kamil/part_1/{file_index}.mp3",
             "video": ""
         }
 

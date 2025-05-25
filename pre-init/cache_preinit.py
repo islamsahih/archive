@@ -6,7 +6,7 @@ def generate_dictionary_bundle(output_dir):
     os.makedirs(output_dir, exist_ok=True)
 
     # Создаём директорию для md-файлов
-    text_dir = os.path.join(output_dir, "text", "dictionary")
+    text_dir = os.path.join(output_dir, "text", "islam_kamil", "part_1")
     os.makedirs(text_dir, exist_ok=True)
 
     # Список всех json-объектов
@@ -19,8 +19,8 @@ def generate_dictionary_bundle(output_dir):
             "dir_index": i,
             "date": "2025-01-14",
             "title": "",
-            "text": f"/text/islam_kamil/dictionary/{i}.md",
-            "audio": f"/audio/islam_kamil/dictionary/{i}.mp3",
+            "text": f"/text/islam_kamil/part_1/{i}.md",
+            "audio": f"/audio/islam_kamil/part_1/{i}.mp3",
             "video": ""
         }
         json_entries.append(entry)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONTENT_DIR="$HOME/src/archive/app/content"
+CONTENT_DIR="$HOME/work/src/archive/app/content"
 
 #SECTION=""
 #SECTION="islam_kamil"
@@ -32,6 +32,22 @@ TEXT_FILE="tmp.md"
 
 #./content --repack=meta --item-dir="$SECTION_DIR"
 
+# main command
+
 ./content "--$1" --item-file="$ITEM_FILE" --fields-file="$FIELDS_FILE" --text-file="$TEXT_FILE"
 
+# main command hadith
+
 #./content --repack=title --item-dir="$SECTION_DIR" --title-template='Хадис {{index}}'
+
+# main command loop
+
+#SRC_SECTION_DIR="$CONTENT_DIR/islam_kamil/_part_1"
+#
+#for INDEX in $(seq 1 107)
+#do
+#  ITEM_FILE="$SECTION_DIR/$INDEX.json"
+#  FIELDS_FILE="$SRC_SECTION_DIR/$INDEX.json"
+#  TEXT_FILE="$SRC_SECTION_DIR/$INDEX.md"
+#  ./content --pack --item-file="$ITEM_FILE" --fields-file="$FIELDS_FILE" --text-file="$TEXT_FILE"
+#done
