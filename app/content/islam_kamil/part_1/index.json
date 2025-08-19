@@ -2,14 +2,14 @@
     "id": "399ae389-0af7-4ffe-98a2-492b439c66d9",
     "index": 90000,
     "dir_index": 1,
-    "title": "Терминология",
-    "description": "Словарь терминов из Откровения",
+    "title": "Терминология и Резюме",
+    "description": "Терминология Откровения и Резюме Ислама",
     "settings": {
         "children": {
             "icon": "i-streamline-dictionary-language-book-solid",
             "short_title_template": "Урок {{dir_index}}",
             "full_title_template": "Урок {{dir_index}}: {{{title}}}",
-            "list_title_template": "Урок {{dir_index}}. {{{title}}}"
+            "list_title_template": "{{dir_index}}. {{{title}}}"
         }
     }
 }

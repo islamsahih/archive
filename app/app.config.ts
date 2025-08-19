@@ -25,7 +25,7 @@ export default defineAppConfig({
     links: [
       '/islam_kamil',
       '/islam_kamil_hadiths',
-      '/qa'
+      // '/qa'
     ],
     footerLinks: [
       '/about', '/contact', '/terms',
@@ -37,17 +37,18 @@ export default defineAppConfig({
         '/islam_kamil': [
           '/islam_kamil/part_1',
           '/islam_kamil/part_2',
-          '/islam_kamil/part_3'
+          '/islam_kamil/part_3',
+          '/islam_kamil/part_4'
         ]
       },
       {
         '/islam_kamil_hadiths': [
-          '/islam_kamil_hadiths/part_1',
           '/islam_kamil_hadiths/part_2',
-          '/islam_kamil_hadiths/part_3'
+          '/islam_kamil_hadiths/part_3',
+          '/islam_kamil_hadiths/part_4'
         ]
       },
-      '/qa',
+      // '/qa',
       '/search'
     ]
   },
@@ -57,11 +58,12 @@ export default defineAppConfig({
         '/islam_kamil': [
           '/islam_kamil/part_1',
           '/islam_kamil/part_2',
-          {'/islam_kamil/part_3': ['/islam_kamil/part_3/chapter_1', '/islam_kamil/part_3/chapter_2']},
+          '/islam_kamil/part_3',
+          {'/islam_kamil/part_4': ['/islam_kamil/part_4/chapter_1', '/islam_kamil/part_4/chapter_2']},
         ]
       },
-      {'/islam_kamil_hadiths': ['/islam_kamil_hadiths/part_1', '/islam_kamil_hadiths/part_2', '/islam_kamil_hadiths/part_3']},
-      '/qa'
+      {'/islam_kamil_hadiths': ['/islam_kamil_hadiths/part_2', '/islam_kamil_hadiths/part_3', '/islam_kamil_hadiths/part_4']},
+      // '/qa'
     ],
   },
   footer: {
