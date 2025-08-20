@@ -4,6 +4,12 @@ export default defineAppConfig({
     initialYear: 2023,
     social: [
       {
+        title: 'Книга «Полный Ислам» - материалы',
+        icon: 'i-logos-telegram',
+        link: 'https://t.me/alislam_sahih',
+        book: true
+      },
+      {
         title: 'Задать вопрос по Исламу, сообщить админам об ошибке на сайте',
         icon: 'i-logos-telegram',
         link: 'https://t.me/sahih_islam',
@@ -25,7 +31,7 @@ export default defineAppConfig({
     links: [
       '/islam_kamil',
       '/islam_kamil_hadiths',
-      '/qa'
+      // '/qa'
     ],
     footerLinks: [
       '/about', '/contact', '/terms',
@@ -37,17 +43,18 @@ export default defineAppConfig({
         '/islam_kamil': [
           '/islam_kamil/part_1',
           '/islam_kamil/part_2',
-          '/islam_kamil/part_3'
+          '/islam_kamil/part_3',
+          '/islam_kamil/part_4'
         ]
       },
       {
         '/islam_kamil_hadiths': [
-          '/islam_kamil_hadiths/part_1',
           '/islam_kamil_hadiths/part_2',
-          '/islam_kamil_hadiths/part_3'
+          '/islam_kamil_hadiths/part_3',
+          '/islam_kamil_hadiths/part_4'
         ]
       },
-      '/qa',
+      // '/qa',
       '/search'
     ]
   },
@@ -57,11 +64,12 @@ export default defineAppConfig({
         '/islam_kamil': [
           '/islam_kamil/part_1',
           '/islam_kamil/part_2',
-          {'/islam_kamil/part_3': ['/islam_kamil/part_3/chapter_1', '/islam_kamil/part_3/chapter_2']},
+          '/islam_kamil/part_3',
+          {'/islam_kamil/part_4': ['/islam_kamil/part_4/chapter_1', '/islam_kamil/part_4/chapter_2']},
         ]
       },
-      {'/islam_kamil_hadiths': ['/islam_kamil_hadiths/part_1', '/islam_kamil_hadiths/part_2', '/islam_kamil_hadiths/part_3']},
-      '/qa'
+      {'/islam_kamil_hadiths': ['/islam_kamil_hadiths/part_2', '/islam_kamil_hadiths/part_3', '/islam_kamil_hadiths/part_4']},
+      // '/qa'
     ],
   },
   footer: {
@@ -130,6 +138,8 @@ export default defineAppConfig({
       question_duo: 'i-lets-icons-question-duotone-line',
 
       chatboxes: 'i-ion-chatboxes',
+
+      edit_notification: 'i-fluent-drafts-16-filled'
     },
     main: {
       wrapper: 'min-h-[calc(100vh-var(--header-height))] md:min-h-[calc(100vh-var(--header-height)-var(--footer-height))]',

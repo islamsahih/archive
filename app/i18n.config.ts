@@ -6,7 +6,11 @@ export default defineI18nConfig(() => ({
       common: {
         uncategorized: 'Без категории',
         references: 'Ссылки:',
-        relatedPages: 'Связанные страницы:'
+        relatedPages: 'Связанные страницы:',
+        editNotification: {
+          title: 'Раздел редактируется',
+          text: 'На настоящий момент на сайте представлены не все материалы раздела. Полный список уроков из этой главы вы можете найти в нашем %%social.book%%.'
+        }
       },
       search: {
         title: 'Поиск',
