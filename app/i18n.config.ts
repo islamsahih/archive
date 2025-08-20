@@ -9,7 +9,7 @@ export default defineI18nConfig(() => ({
         relatedPages: 'Связанные страницы:',
         editNotification: {
           title: 'Раздел редактируется',
-          text: 'На настоящий момент на сайте представлены не все материалы раздела. Полный список уроков из этой главы вы можете найти в нашем {{#book}}\u003ca href=\"{{link}}\" target=\"_blank\"\u003e\u003cspan class=\"inline-flex items-baseline ml-1 gap-x-1\"\u003e\u003cimg class=\"not-prose w-5 h-5 self-center\" src=\"/icon/{{icon}}.svg\" alt=\"{{title}}\" /\u003eTelegram\u003c/span\u003e\u003c/a\u003e{{/book}}.'
+          text: 'На настоящий момент на сайте представлены не все материалы раздела. Полный список уроков из этой главы вы можете найти в нашем %%social.book%%.'
         }
       },
       search: {

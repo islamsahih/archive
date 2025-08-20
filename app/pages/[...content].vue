@@ -50,7 +50,7 @@ const articleRenderData = {
   book: appConfig.seo.social.filter(link => link.book),
 }
 const article = doc.value.body && Mustache.render(String(doc.value.body), articleRenderData)
-const editNotificationText = settings.notify_edit && Mustache.render(String($t('common.editNotification.text')), articleRenderData)
+const editNotificationText = settings.notify_edit && $t('common.editNotification.text').replaceAll(`%%social.book%%`, Mustache.render(`{{#book}}\u003ca href=\"{{link}}\" target=\"_blank\"\u003e\u003cspan class=\"inline-flex items-baseline ml-1 gap-x-1\"\u003e\u003cimg class=\"not-prose w-5 h-5 self-center\" src=\"/icon/{{icon}}.svg\" alt=\"{{title}}\" /\u003eTelegram\u003c/span\u003e\u003c/a\u003e{{/book}}`, articleRenderData))
 
 const references = doc.value.references?.map(path => {
   const page = navPageFromPath(path, navigation.value)
