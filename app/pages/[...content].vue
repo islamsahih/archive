@@ -12,7 +12,7 @@ definePageMeta({
 const appConfig = useAppConfig()
 const router = useRouter()
 const route = useRoute()
-
+const $t = useTranslate()
 const navigation = inject<Ref<NavItem[]>>('navigation', ref([]))
 
 const page = navPageFromPath(route.path, navigation.value)
@@ -41,13 +41,16 @@ if (!doc.value) {
   throw createError({statusCode: 404, fatal: true})
 }
 useContentHead(doc)
-const article = doc.value.body && Mustache.render(String(doc.value.body), {
+const articleRenderData = {
   children: children,
   source_ar: doc.value.meta?.source?.ar?.join(', '),
   source_ru: doc.value.meta?.source?.ru?.join(', '),
   social: appConfig.seo.social,
-  admin: appConfig.seo.social.filter(link => link.admin)
-})
+  admin: appConfig.seo.social.filter(link => link.admin),
+  book: appConfig.seo.social.filter(link => link.book),
+}
+const article = doc.value.body && Mustache.render(String(doc.value.body), articleRenderData)
+const editNotificationText = settings.notify_edit && Mustache.render(String($t('common.editNotification.text')), articleRenderData)
 
 const references = doc.value.references?.map(path => {
   const page = navPageFromPath(path, navigation.value)
@@ -122,6 +125,7 @@ const ui = {
       icon: 'w-5 h-5'
     },
   },
+  editNotification: 'mt-4 sm:mt-8',
   tags: {
     wrapper: 'flex flex-row flex-wrap items-start justify-start my-[2rem] gap-2',
   },
@@ -162,6 +166,17 @@ const ui = {
           </NuxtLink>
         </template>
       </PageHeader>
+
+      <UAlert v-if="settings.notify_edit"
+        :title="$t('common.editNotification.title')"
+        :icon="appConfig.ui.icons.edit_notification"
+        :class="ui.editNotification"
+      >
+        <template #description>
+          <div class="text-sm font-medium" v-html="editNotificationText">
+          </div>
+        </template>
+      </UAlert>
 
       <PageBody v-if="isList" prose>
         <ul class="list-none pl-0">

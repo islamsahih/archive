@@ -9,9 +9,9 @@
         "full_title": "Хадисы из книги «Полный Ислам»",
         "children": {
             "icon": "i-ooui-references-ltr",
-            "short_title_template": "Часть {{dir_index}}",
-            "full_title_template": "Часть {{dir_index}}: {{{title}}}",
-            "list_title_template": "Часть {{dir_index}}: {{{title}}}"
+            "short_title_template": "Из части {{dir_index}}",
+            "full_title_template": "Хадисы из части {{dir_index}}: {{{title}}}",
+            "list_title_template": "Хадисы из части {{dir_index}}: {{{title}}}"
         }
     }
 }

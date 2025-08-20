@@ -4,6 +4,12 @@ export default defineAppConfig({
     initialYear: 2023,
     social: [
       {
+        title: 'Книга «Полный Ислам» - материалы',
+        icon: 'i-logos-telegram',
+        link: 'https://t.me/alislam_sahih',
+        book: true
+      },
+      {
         title: 'Задать вопрос по Исламу, сообщить админам об ошибке на сайте',
         icon: 'i-logos-telegram',
         link: 'https://t.me/sahih_islam',
@@ -132,6 +138,8 @@ export default defineAppConfig({
       question_duo: 'i-lets-icons-question-duotone-line',
 
       chatboxes: 'i-ion-chatboxes',
+
+      edit_notification: 'i-fluent-drafts-16-filled'
     },
     main: {
       wrapper: 'min-h-[calc(100vh-var(--header-height))] md:min-h-[calc(100vh-var(--header-height)-var(--footer-height))]',

@@ -11,6 +11,7 @@
             "full_title_template": "Хадис {{dir_index}}",
             "list_title_template": "Хадис {{dir_index}}",
             "no_self_breadcrumb": true
-        }
+        },
+        "notify_edit": true
     }
 }
