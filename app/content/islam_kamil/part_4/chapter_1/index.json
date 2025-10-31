@@ -9,7 +9,6 @@
             "short_title_template": "Урок {{dir_index}}",
             "full_title_template": "Урок {{dir_index}}: {{{title}}}",
             "list_title_template": "{{dir_index}}. {{{title}}}"
-        },
-        "notify_edit": true
+        }
     }
 }
